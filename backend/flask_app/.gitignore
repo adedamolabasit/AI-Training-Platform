@@ -1,0 +1,4 @@
+# Ignore uploads and virtual environment
+app/uploads/
+venv/
+__pycache__/
