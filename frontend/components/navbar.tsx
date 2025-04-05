@@ -1,18 +1,24 @@
-"use client"
+"use client";
 
-import { Brain } from "lucide-react"
-import { ModeToggle } from "./mode-toggle"
-import { Button } from "./ui/button"
-import { usePathname } from "next/navigation"
-import Link from "next/link"
+import { Brain } from "lucide-react";
+import { ModeToggle } from "./mode-toggle";
+import { Button } from "./ui/button";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+
+import {
+  DynamicContextProvider,
+  DynamicWidget,
+} from "@dynamic-labs/sdk-react-core";
+
 
 const Navbar = () => {
-  const pathname = usePathname()
-  
+  const pathname = usePathname();
+
   const routes = [
     {
       href: "/dashboard/contributor",
-      label: "Data Contributors",
+      label: "DataSet Contributors",
       active: pathname === "/dashboard/contributor",
     },
     {
@@ -25,7 +31,7 @@ const Navbar = () => {
       label: "Verification",
       active: pathname === "/verify",
     },
-  ]
+  ];
 
   return (
     <div className="border-b">
@@ -54,11 +60,12 @@ const Navbar = () => {
         </nav>
         <div className="ml-auto flex items-center space-x-4">
           <ModeToggle />
-          <Button>Connect Wallet</Button>
+          <DynamicWidget />
+          {/* <ConnectButton /> */}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

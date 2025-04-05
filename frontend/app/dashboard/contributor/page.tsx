@@ -22,6 +22,25 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
+type FileItem = {
+  cid: string;
+  createdAt: number;
+  dataPartition: string;
+  encryption: boolean;
+  fileName: string;
+  fileSizeInBytes: number;
+  id: string;
+  lastUpdate: number;
+  mimeType: string;
+  publicKey: string;
+  sentForDeal: string;
+};
+
+type FileState = {
+  fileList: FileItem[];
+  totalFiles: number;
+};
+
 export default function ContributorDashboard() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
@@ -32,6 +51,8 @@ export default function ContributorDashboard() {
   });
   const [isUploading, setIsUploading] = useState(false);
   const [activeTab, setActiveTab] = useState("upload");
+  const [dataSet, setDataSet] = useState<FileState>();
+  const [loading, setLoading] = useState(true);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -84,7 +105,7 @@ export default function ContributorDashboard() {
       const result = await response.json();
       console.log("Success:", result);
       toast.success("Dataset uploaded successfully!");
-      
+
       // Reset form and switch to manage tab
       setSelectedFile(null);
       setFormData({
@@ -102,16 +123,101 @@ export default function ContributorDashboard() {
     }
   };
 
+  const getAllDataSet = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("http://127.0.0.1:5000/api/datasets", {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const result = await response.json();
+      setDataSet(result);
+      console.log("Success:", result);
+    } catch (e: any) {
+      toast.error("Error fetching dataset:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  };
+
+  useEffect(() => {
+    if (activeTab === "all") {
+      getAllDataSet();
+    }
+  }, [activeTab]);
+
+  if (activeTab === "manage" && !dataSet) {
+    return (
+      <div className="flex space-x-2 w-full items-full">
+        <div className="w-5 h-5 bg-blue-500 rounded-full animate-pulse"></div>
+        <div className="w-5 h-5 bg-blue-500 rounded-full animate-pulse delay-200"></div>
+        <div className="w-5 h-5 bg-blue-500 rounded-full animate-pulse delay-400"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="py-10">
       <h1 className="text-4xl font-bold mb-6">Data Contributor Dashboard</h1>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
         <TabsList>
-          <TabsTrigger value="upload">Upload Dataset</TabsTrigger>
+          <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="manage">Manage Datasets</TabsTrigger>
+          <TabsTrigger value="upload">Upload Dataset</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="all">
+          <Card>
+            <CardHeader>
+              <CardTitle>All Datasets ({dataSet?.totalFiles})</CardTitle>
+              <CardDescription>
+                Manage your uploaded datasets and their settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                {dataSet?.fileList.map((data) => {
+                  return (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Image Classification Dataset</CardTitle>
+                        <CardDescription>
+                          {data.fileName} • MIT License
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex justify-between items-center">
+                        <div className="flex items-center space-x-4">
+                          <Database className="h-4 w-4" />
+                          <span>{formatFileSize(data.fileSizeInBytes)}</span>
+                        </div>
+                        <Button variant="outline">
+                          <Settings className="mr-2 h-4 w-4" /> Manage
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="upload" className="flex justify-center space-y-4">
           <Card>
@@ -197,7 +303,9 @@ export default function ContributorDashboard() {
                 </div>
 
                 <div className="grid w-full max-w-sm items-center gap-4">
-                  <Label htmlFor="access" className="mt-4">Access Type</Label>
+                  <Label htmlFor="access" className="mt-4">
+                    Access Type
+                  </Label>
                   <Select
                     onValueChange={(value) =>
                       handleSelectChange("access", value)
@@ -217,8 +325,8 @@ export default function ContributorDashboard() {
                   </Select>
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full max-w-sm mt-6"
                   disabled={isUploading}
                 >
@@ -229,7 +337,7 @@ export default function ContributorDashboard() {
                     </>
                   ) : (
                     <>
-                      <Upload className="mr-2 h-4 w-4" /> 
+                      <Upload className="mr-2 h-4 w-4" />
                       Upload Dataset
                     </>
                   )}
@@ -242,7 +350,7 @@ export default function ContributorDashboard() {
         <TabsContent value="manage">
           <Card>
             <CardHeader>
-              <CardTitle>Your Datasets</CardTitle>
+              <CardTitle>Your Datasets ({dataSet?.totalFiles})</CardTitle>
               <CardDescription>
                 Manage your uploaded datasets and their settings
               </CardDescription>
