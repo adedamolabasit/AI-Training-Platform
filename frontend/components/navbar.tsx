@@ -11,7 +11,6 @@ import {
   DynamicWidget,
 } from "@dynamic-labs/sdk-react-core";
 
-
 const Navbar = () => {
   const pathname = usePathname();
 
@@ -35,7 +34,7 @@ const Navbar = () => {
 
   return (
     <div className="border-b">
-      <div className="flex h-16 items-center px-4 max-w-7xl mx-auto">
+      <div className="flex h-16 justify-between items-center px-4 max-w-screen mx-6">
         <Link href="/">
           <div className="flex items-center gap-x-2">
             <Brain className="h-8 w-8" />
@@ -58,10 +57,9 @@ const Navbar = () => {
             </Button>
           ))}
         </nav>
-        <div className="ml-auto flex items-center space-x-4">
+        <div className="flex items-center space-x-4">
           <ModeToggle />
           <DynamicWidget />
-          {/* <ConnectButton /> */}
         </div>
       </div>
     </div>

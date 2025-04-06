@@ -3,6 +3,7 @@
 /* eslint-disable */
 import type {
   BaseContract,
+  BigNumberish,
   BytesLike,
   FunctionFragment,
   Result,
@@ -22,62 +23,107 @@ import type {
   TypedContractMethod,
 } from "./common";
 
+export declare namespace DataSet {
+  export type MetadataStruct = {
+    cid: string;
+    name: string;
+    fileName: string;
+    fileSize: BigNumberish;
+    domain: string;
+    license: string;
+    access: string;
+    visibility: string;
+    createdAt: BigNumberish;
+    updatedAt: BigNumberish;
+  };
+
+  export type MetadataStructOutput = [
+    cid: string,
+    name: string,
+    fileName: string,
+    fileSize: bigint,
+    domain: string,
+    license: string,
+    access: string,
+    visibility: string,
+    createdAt: bigint,
+    updatedAt: bigint
+  ] & {
+    cid: string;
+    name: string;
+    fileName: string;
+    fileSize: bigint;
+    domain: string;
+    license: string;
+    access: string;
+    visibility: string;
+    createdAt: bigint;
+    updatedAt: bigint;
+  };
+}
+
 export interface DataSetInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "cidExists"
-      | "getCidsByOwner"
-      | "getMetadataByCid"
-      | "getOwnerOfCid"
+      | "getAllMetadata"
+      | "getCountByVisibility"
+      | "getMetadataByVisibility"
+      | "getTotalDatasetCount"
       | "storeMetadata"
-      | "updateMetadata"
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic: "MetadataStored" | "MetadataUpdated"
   ): EventFragment;
 
-  encodeFunctionData(functionFragment: "cidExists", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "getCidsByOwner",
-    values: [AddressLike]
+    functionFragment: "getAllMetadata",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getMetadataByCid",
+    functionFragment: "getCountByVisibility",
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "getOwnerOfCid",
-    values: [string]
+    functionFragment: "getMetadataByVisibility",
+    values: [string, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTotalDatasetCount",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "storeMetadata",
-    values: [string, string, string, string, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "updateMetadata",
-    values: [string, string, string, string, string]
+    values: [
+      string,
+      string,
+      string,
+      BigNumberish,
+      string,
+      string,
+      string,
+      string
+    ]
   ): string;
 
-  decodeFunctionResult(functionFragment: "cidExists", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getCidsByOwner",
+    functionFragment: "getAllMetadata",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getMetadataByCid",
+    functionFragment: "getCountByVisibility",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getOwnerOfCid",
+    functionFragment: "getMetadataByVisibility",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTotalDatasetCount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "storeMetadata",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "updateMetadata",
     data: BytesLike
   ): Result;
 }
@@ -87,25 +133,34 @@ export namespace MetadataStoredEvent {
     cid: string,
     owner: AddressLike,
     name: string,
+    fileName: string,
+    fileSize: BigNumberish,
     domain: string,
     license: string,
-    access: string
+    access: string,
+    visibility: string
   ];
   export type OutputTuple = [
     cid: string,
     owner: string,
     name: string,
+    fileName: string,
+    fileSize: bigint,
     domain: string,
     license: string,
-    access: string
+    access: string,
+    visibility: string
   ];
   export interface OutputObject {
     cid: string;
     owner: string;
     name: string;
+    fileName: string;
+    fileSize: bigint;
     domain: string;
     license: string;
     access: string;
+    visibility: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -118,25 +173,34 @@ export namespace MetadataUpdatedEvent {
     cid: string,
     updater: AddressLike,
     name: string,
+    fileName: string,
+    fileSize: BigNumberish,
     domain: string,
     license: string,
-    access: string
+    access: string,
+    visibility: string
   ];
   export type OutputTuple = [
     cid: string,
     updater: string,
     name: string,
+    fileName: string,
+    fileSize: bigint,
     domain: string,
     license: string,
-    access: string
+    access: string,
+    visibility: string
   ];
   export interface OutputObject {
     cid: string;
     updater: string;
     name: string;
+    fileName: string;
+    fileSize: bigint;
     domain: string;
     license: string;
     access: string;
+    visibility: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -187,37 +251,36 @@ export interface DataSet extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  cidExists: TypedContractMethod<[cid: string], [boolean], "view">;
-
-  getCidsByOwner: TypedContractMethod<[owner: AddressLike], [string[]], "view">;
-
-  getMetadataByCid: TypedContractMethod<
-    [cid: string],
-    [[string, string, string, string, string, string]],
+  getAllMetadata: TypedContractMethod<
+    [page: BigNumberish, pageSize: BigNumberish],
+    [DataSet.MetadataStructOutput[]],
     "view"
   >;
 
-  getOwnerOfCid: TypedContractMethod<[cid: string], [string], "view">;
+  getCountByVisibility: TypedContractMethod<
+    [visibility: string],
+    [bigint],
+    "view"
+  >;
+
+  getMetadataByVisibility: TypedContractMethod<
+    [visibility: string, page: BigNumberish, pageSize: BigNumberish],
+    [DataSet.MetadataStructOutput[]],
+    "view"
+  >;
+
+  getTotalDatasetCount: TypedContractMethod<[], [bigint], "view">;
 
   storeMetadata: TypedContractMethod<
     [
       cid: string,
       name: string,
+      fileName: string,
+      fileSize: BigNumberish,
       domain: string,
       license: string,
-      access: string
-    ],
-    [void],
-    "nonpayable"
-  >;
-
-  updateMetadata: TypedContractMethod<
-    [
-      cid: string,
-      name: string,
-      domain: string,
-      license: string,
-      access: string
+      access: string,
+      visibility: string
     ],
     [void],
     "nonpayable"
@@ -228,43 +291,37 @@ export interface DataSet extends BaseContract {
   ): T;
 
   getFunction(
-    nameOrSignature: "cidExists"
-  ): TypedContractMethod<[cid: string], [boolean], "view">;
-  getFunction(
-    nameOrSignature: "getCidsByOwner"
-  ): TypedContractMethod<[owner: AddressLike], [string[]], "view">;
-  getFunction(
-    nameOrSignature: "getMetadataByCid"
+    nameOrSignature: "getAllMetadata"
   ): TypedContractMethod<
-    [cid: string],
-    [[string, string, string, string, string, string]],
+    [page: BigNumberish, pageSize: BigNumberish],
+    [DataSet.MetadataStructOutput[]],
     "view"
   >;
   getFunction(
-    nameOrSignature: "getOwnerOfCid"
-  ): TypedContractMethod<[cid: string], [string], "view">;
+    nameOrSignature: "getCountByVisibility"
+  ): TypedContractMethod<[visibility: string], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getMetadataByVisibility"
+  ): TypedContractMethod<
+    [visibility: string, page: BigNumberish, pageSize: BigNumberish],
+    [DataSet.MetadataStructOutput[]],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getTotalDatasetCount"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "storeMetadata"
   ): TypedContractMethod<
     [
       cid: string,
       name: string,
+      fileName: string,
+      fileSize: BigNumberish,
       domain: string,
       license: string,
-      access: string
-    ],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "updateMetadata"
-  ): TypedContractMethod<
-    [
-      cid: string,
-      name: string,
-      domain: string,
-      license: string,
-      access: string
+      access: string,
+      visibility: string
     ],
     [void],
     "nonpayable"
@@ -286,7 +343,7 @@ export interface DataSet extends BaseContract {
   >;
 
   filters: {
-    "MetadataStored(string,address,string,string,string,string)": TypedContractEvent<
+    "MetadataStored(string,address,string,string,uint256,string,string,string,string)": TypedContractEvent<
       MetadataStoredEvent.InputTuple,
       MetadataStoredEvent.OutputTuple,
       MetadataStoredEvent.OutputObject
@@ -297,7 +354,7 @@ export interface DataSet extends BaseContract {
       MetadataStoredEvent.OutputObject
     >;
 
-    "MetadataUpdated(string,address,string,string,string,string)": TypedContractEvent<
+    "MetadataUpdated(string,address,string,string,uint256,string,string,string,string)": TypedContractEvent<
       MetadataUpdatedEvent.InputTuple,
       MetadataUpdatedEvent.OutputTuple,
       MetadataUpdatedEvent.OutputObject
