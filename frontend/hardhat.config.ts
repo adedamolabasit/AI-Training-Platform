@@ -13,15 +13,10 @@ const config = {
     },
   },
   networks: {
-    arbitrumOne: {
+    arbitrumSepolia: {
       url: `${process.env.ALCHEMY_API_URL}`,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 421614,
-    },
-  },
-  etherscan: {
-    apiKey: {
-      polygonMumbai: process.env.POLYGONSCAN_API_KEY || "https://www.oklink.com/amoy",
     },
   },
   typechain: {

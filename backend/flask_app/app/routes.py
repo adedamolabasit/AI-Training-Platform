@@ -7,7 +7,7 @@ import io
 from lighthouseweb3 import Lighthouse
 import json
 from app.service import get_uploads
-# from app.akave import AkaveClient
+from datetime import datetime
 
 api_blueprint = Blueprint("api", __name__)
 
@@ -20,10 +20,6 @@ def upload_dataset():
             return jsonify({"error": "No file part"}), 400
 
         file = request.files["file"]
-        name = request.form.get("name")
-        domain = request.form.get("domain")
-        license = request.form.get("license")
-        access = request.form.get("access")
 
         if file.filename == "":
             return jsonify({"error": "No selected file"}), 400
@@ -33,41 +29,27 @@ def upload_dataset():
 
         file_path = os.path.join(Config.UPLOAD_FOLDER, file.filename)
         
-        file.save(file_path)
+        unique_tag = f"datasetdsrferfrwii"
         
-        meta_data = {
-            "file": file.filename,  # Use the file name instead of the object
-            "name": name,
-            "domain": domain,
-            "license": license,
-            "access": access
-        }
+        create_bucket = client.create_bucket(unique_tag)
         
-        metadata_json = json.dumps(meta_data)
-        
-        # b = client.create_bucket(bucket_name='dataset111')
-        
-        
-        akave_file = client.upload_file('dataset', file_path)
-        
-        
-        print(akave_file,"File Upload with Tag Successful!")
+        saved_file = client.upload_file(create_bucket["data"]["Name"], file_path)
+                
+        print(saved_file,"File Upload with Tag Successful!")
 
         return jsonify({
             "message": "Dataset uploaded successfully",
-            # "file_name": file.filename,
-            # "name": name,
-            # "domain": domain,
-            # "license": license,
-            # "access": access
+            "success": True,
+            "cid": saved_file["data"]["RootCID"]
+            
         }), 200
 
     except Exception as e:
         print("🚨 Error:", str(e))
         print(traceback.format_exc())  # Detailed error message
-        return jsonify({"error": f"File upload failed: {str(e)}"}), 500
+        return jsonify({"message": f"File upload failed: {str(e)}", "success": False}), 500
     
 @api_blueprint.route("/api/datasets", methods=["GET"])
 def get_all_dataset():
-    files = get_uploads()
-    return files
+    buckets = client.list_files("dataset")
+    return buckets

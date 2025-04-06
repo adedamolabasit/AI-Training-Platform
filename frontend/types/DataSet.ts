@@ -22,7 +22,7 @@ import type {
   TypedContractMethod,
 } from "./common";
 
-export interface DataSetsInterface extends Interface {
+export interface DataSetInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "cidExists"
@@ -144,11 +144,11 @@ export namespace MetadataUpdatedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export interface DataSets extends BaseContract {
-  connect(runner?: ContractRunner | null): DataSets;
+export interface DataSet extends BaseContract {
+  connect(runner?: ContractRunner | null): DataSet;
   waitForDeployment(): Promise<this>;
 
-  interface: DataSetsInterface;
+  interface: DataSetInterface;
 
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,

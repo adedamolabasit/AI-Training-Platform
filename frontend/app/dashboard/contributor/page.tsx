@@ -20,7 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useWriteContract, useAccount } from "wagmi";
 import { toast } from "sonner";
+import ABI from "../../../abi.json";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 
 type FileItem = {
   cid: string;
@@ -42,8 +45,9 @@ type FileState = {
 };
 
 export default function ContributorDashboard() {
+  const { isConnected } = useAccount();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [formData, setFormData] = useState({
+  const [metaData, setMetaData] = useState({
     name: "",
     domain: "",
     license: "",
@@ -54,6 +58,17 @@ export default function ContributorDashboard() {
   const [dataSet, setDataSet] = useState<FileState>();
   const [loading, setLoading] = useState(true);
 
+  const {
+    writeContract,
+    isSuccess: storedOnchainSuccess,
+    isError: creationIsError,
+    error: creationError,
+    isPending,
+  } = useWriteContract();
+
+  const { primaryWallet } = useDynamicContext();
+  const { chain } = useAccount();
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0]);
@@ -62,14 +77,14 @@ export default function ContributorDashboard() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({
+    setMetaData((prev) => ({
       ...prev,
       [id]: value,
     }));
   };
 
   const handleSelectChange = (field: string, value: string) => {
-    setFormData((prev) => ({
+    setMetaData((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -78,6 +93,25 @@ export default function ContributorDashboard() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate inputs
+    if (!primaryWallet) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
+    const isCorrectNetwork = chain?.id === 421614; // 421614 is Arbitrum Sepolia
+
+    // Usage in your submit handler:
+    if (!isCorrectNetwork) {
+      toast.error("Please switch to Arbitrum Sepolia network");
+      return;
+    }
+
+    if (chain?.id !== 421614) {
+      toast.error("Please switch to Arbitrum Sepolia network");
+      return;
+    }
+
     if (!selectedFile) {
       toast.error("Please select a file first");
       return;
@@ -85,39 +119,62 @@ export default function ContributorDashboard() {
 
     setIsUploading(true);
 
-    const data = new FormData();
-    data.append("file", selectedFile);
-    data.append("name", formData.name);
-    data.append("domain", formData.domain);
-    data.append("license", formData.license);
-    data.append("access", formData.access);
-
     try {
+      // 1. Upload file
+      const formData = new FormData();
+      formData.append("file", selectedFile);
       const response = await fetch("http://127.0.0.1:5000/api/datasets", {
         method: "POST",
-        body: data,
+        body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
       const result = await response.json();
-      console.log("Success:", result);
-      toast.success("Dataset uploaded successfully!");
+      console.log("IPFS result:", result);
 
-      // Reset form and switch to manage tab
+      // 2. Store on-chain
+      console.log("Attempting contract write with:", {
+        cid: result.cid,
+        name: metaData.name,
+        domain: metaData.domain,
+        license: metaData.license,
+        access: metaData.access,
+      });
+
+      const txPromise = writeContract({
+        address: "0x6b8763E021767835a48cCfDF76B36345Ee47BcD1",
+        abi: ABI.abi,
+        functionName: "storeMetadata",
+        args: [
+          result.cid,
+          metaData.name,
+          metaData.domain,
+          metaData.license,
+          metaData.access,
+        ],
+      });
+
+      // toast.promise(txPromise, {
+      //   loading: "Confirm transaction in wallet...",
+      //   success: (txHash) => `Transaction sent! Hash: ${txHash.slice(0, 8)}...`,
+      //   error: (err) => err.message,
+      // });
+
+      const txHash = await txPromise;
+      console.log("Transaction hash:", txHash);
+
+      // Reset form
       setSelectedFile(null);
-      setFormData({
+      setMetaData({
         name: "",
         domain: "",
         license: "",
         access: "",
       });
-      setActiveTab("manage");
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error uploading dataset");
+      console.error("Submission error:", error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
     } finally {
       setIsUploading(false);
     }
@@ -147,7 +204,8 @@ export default function ContributorDashboard() {
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    if (bytes < 1024 * 1024 * 1024)
+      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
   };
 
@@ -157,15 +215,15 @@ export default function ContributorDashboard() {
     }
   }, [activeTab]);
 
-  if (activeTab === "manage" && !dataSet) {
-    return (
-      <div className="flex space-x-2 w-full items-full">
-        <div className="w-5 h-5 bg-blue-500 rounded-full animate-pulse"></div>
-        <div className="w-5 h-5 bg-blue-500 rounded-full animate-pulse delay-200"></div>
-        <div className="w-5 h-5 bg-blue-500 rounded-full animate-pulse delay-400"></div>
-      </div>
-    );
-  }
+  // if (activeTab === "manage") {
+  //   return (
+  //     <div className="flex h-screen space-x-2 h-screen items-full">
+  //       <div className="w-5 h-5 bg-blue-500 rounded-full animate-pulse"></div>
+  //       <div className="w-5 h-5 bg-blue-500 rounded-full animate-pulse delay-200"></div>
+  //       <div className="w-5 h-5 bg-blue-500 rounded-full animate-pulse delay-400"></div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="py-10">
@@ -247,7 +305,7 @@ export default function ContributorDashboard() {
                   <Input
                     id="name"
                     placeholder="Enter dataset name"
-                    value={formData.name}
+                    value={metaData.name}
                     onChange={handleInputChange}
                     required
                     disabled={isUploading}
@@ -262,7 +320,7 @@ export default function ContributorDashboard() {
                     onValueChange={(value) =>
                       handleSelectChange("domain", value)
                     }
-                    value={formData.domain}
+                    value={metaData.domain}
                     required
                     disabled={isUploading}
                   >
@@ -287,7 +345,7 @@ export default function ContributorDashboard() {
                     onValueChange={(value) =>
                       handleSelectChange("license", value)
                     }
-                    value={formData.license}
+                    value={metaData.license}
                     required
                     disabled={isUploading}
                   >
@@ -310,7 +368,7 @@ export default function ContributorDashboard() {
                     onValueChange={(value) =>
                       handleSelectChange("access", value)
                     }
-                    value={formData.access}
+                    value={metaData.access}
                     required
                     disabled={isUploading}
                   >

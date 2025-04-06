@@ -3,13 +3,13 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
   console.log("Deploying DataSets contract...");
   
-  const DataSets = await ethers.getContractFactory("DataSets");
+  const DataSet = await ethers.getContractFactory("DataSet");
   
-  const contract = await DataSets.deploy();
+  const contract = await DataSet.deploy();
   
   await contract.waitForDeployment();
   
-  console.log(`DataSets deployed to: ${await contract.getAddress()}`);
+  console.log(`DataSet deployed to: ${await contract.getAddress()}`);
   
   return contract;
 }
