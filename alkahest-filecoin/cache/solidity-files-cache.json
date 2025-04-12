@@ -1,0 +1,114 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/mac/Downloads/project-bolt/filecoin-hack/alkahest-filecoin/contracts/Arbiter.sol": {
+      "lastModificationDate": 1744416978193,
+      "contentHash": "499bc5d2d17b2860dfcc702f0c5287a8",
+      "sourceName": "contracts/Arbiter.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Arbiter",
+        "IObligationManager"
+      ]
+    },
+    "/Users/mac/Downloads/project-bolt/filecoin-hack/alkahest-filecoin/contracts/ObligationManager.sol": {
+      "lastModificationDate": 1744416966997,
+      "contentHash": "96c3eb6d56d91de641907cfa67025a86",
+      "sourceName": "contracts/ObligationManager.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "ObligationManager"
+      ]
+    },
+    "/Users/mac/Downloads/project-bolt/filecoin-hack/alkahest-filecoin/contracts/Test.sol": {
+      "lastModificationDate": 1744415251944,
+      "contentHash": "32ab56d013c4821c02d799c97704dbac",
+      "sourceName": "contracts/Test.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Test"
+      ]
+    }
+  }
+}

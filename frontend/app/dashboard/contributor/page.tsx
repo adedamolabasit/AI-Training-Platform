@@ -12,7 +12,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, Database, Settings, Loader2, List, Grid, Eye, Layers, Calendar, RefreshCw } from "lucide-react";
+import {
+  Upload,
+  Database,
+  Settings,
+  Loader2,
+  List,
+  Grid,
+  Eye,
+  Layers,
+  Calendar,
+  RefreshCw,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -63,10 +74,10 @@ export default function ContributorDashboard() {
   const { primaryWallet } = useDynamicContext();
   const { chain } = useAccount();
 
-  const { 
-    data: allDataSet, 
-    isLoading, 
-    isError 
+  const {
+    data: allDataSet,
+    isLoading,
+    isError,
   } = useReadContract({
     abi: ABI.abi,
     address: "0x4e070bb604E544dE53851E5a5fDC4B0086674487",
@@ -133,8 +144,7 @@ export default function ContributorDashboard() {
 
       const result = await response.json();
 
-      
-      const onChainResult = writeContract({
+      writeContract({
         address: "0x4e070bb604E544dE53851E5a5fDC4B0086674487",
         abi: ABI.abi,
         functionName: "storeMetadata",
@@ -150,7 +160,7 @@ export default function ContributorDashboard() {
         ],
       });
 
-      if(isSuccess) {
+      if (isSuccess) {
         toast.success("Dataset uploaded successfully!");
         setSelectedFile(null);
         setMetaData({
@@ -162,8 +172,6 @@ export default function ContributorDashboard() {
       } else {
         toast.error("Something went wrong!");
       }
-
-     
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error uploading dataset");
@@ -193,13 +201,13 @@ export default function ContributorDashboard() {
       <Database className="h-12 w-12 text-gray-400 mb-4" />
       <h3 className="text-lg font-medium text-gray-900">No datasets found</h3>
       <p className="text-gray-500 mt-1">
-        {activeTab === "all" 
-          ? "No datasets have been uploaded yet" 
+        {activeTab === "all"
+          ? "No datasets have been uploaded yet"
           : "You haven't uploaded any datasets yet"}
       </p>
       {activeTab !== "upload" && (
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="mt-4"
           onClick={() => setActiveTab("upload")}
         >
@@ -213,7 +221,10 @@ export default function ContributorDashboard() {
   const renderLoadingSkeleton = () => (
     <div className="space-y-4">
       {[...Array(3)].map((_, i) => (
-        <Skeleton key={i} className={`h-32 rounded-lg ${pulse ? "animate-pulse" : ""}`} />
+        <Skeleton
+          key={i}
+          className={`h-32 rounded-lg ${pulse ? "animate-pulse" : ""}`}
+        />
       ))}
     </div>
   );
@@ -245,11 +256,13 @@ export default function ContributorDashboard() {
                 <span>{formatDate(Number(data.createdAt))}</span>
               </div>
               <div className="flex justify-between pt-2">
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  data.visibility === "public"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-blue-100 text-blue-800"
-                }`}>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${
+                    data.visibility === "public"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-blue-100 text-blue-800"
+                  }`}
+                >
                   {data.visibility}
                 </span>
                 <Button variant="outline" size="sm">
@@ -280,11 +293,13 @@ export default function ContributorDashboard() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  data.visibility === "public"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-blue-100 text-blue-800"
-                }`}>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${
+                    data.visibility === "public"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-blue-100 text-blue-800"
+                  }`}
+                >
                   {data.visibility}
                 </span>
                 <Button variant="outline" size="sm">
@@ -307,15 +322,15 @@ export default function ContributorDashboard() {
         <h1 className="text-3xl font-bold">Data Contributor Dashboard</h1>
         {activeTab !== "upload" && (
           <div className="flex gap-2">
-            <Button 
-              variant={viewMode === "grid" ? "default" : "outline"} 
+            <Button
+              variant={viewMode === "grid" ? "default" : "outline"}
               size="sm"
               onClick={() => setViewMode("grid")}
             >
               <Grid className="h-4 w-4 mr-2" /> Grid
             </Button>
-            <Button 
-              variant={viewMode === "list" ? "default" : "outline"} 
+            <Button
+              variant={viewMode === "list" ? "default" : "outline"}
               size="sm"
               onClick={() => setViewMode("list")}
             >
@@ -325,7 +340,11 @@ export default function ContributorDashboard() {
         )}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="manage">My Datasets</TabsTrigger>
@@ -342,13 +361,13 @@ export default function ContributorDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                renderLoadingSkeleton()
-              ) : allDataSet && (allDataSet as any).length > 0 ? (
-                viewMode === "grid" ? renderGridView() : renderListView()
-              ) : (
-                renderEmptyState()
-              )}
+              {isLoading
+                ? renderLoadingSkeleton()
+                : allDataSet && (allDataSet as any).length > 0
+                ? viewMode === "grid"
+                  ? renderGridView()
+                  : renderListView()
+                : renderEmptyState()}
             </CardContent>
           </Card>
         </TabsContent>
@@ -362,18 +381,21 @@ export default function ContributorDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                renderLoadingSkeleton()
-              ) : allDataSet && (allDataSet as any).length > 0 ? (
-                viewMode === "grid" ? renderGridView() : renderListView()
-              ) : (
-                renderEmptyState()
-              )}
+              {isLoading
+                ? renderLoadingSkeleton()
+                : allDataSet && (allDataSet as any).length > 0
+                ? viewMode === "grid"
+                  ? renderGridView()
+                  : renderListView()
+                : renderEmptyState()}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="upload" className="mx-auto w-full flex justify-center">
+        <TabsContent
+          value="upload"
+          className="mx-auto w-full flex justify-center"
+        >
           <Card className="w-1/2 ">
             <CardHeader>
               <CardTitle>Upload New Dataset</CardTitle>
@@ -409,7 +431,9 @@ export default function ContributorDashboard() {
                 <div className="space-y-2">
                   <Label>Domain</Label>
                   <Select
-                    onValueChange={(value) => handleSelectChange("domain", value)}
+                    onValueChange={(value) =>
+                      handleSelectChange("domain", value)
+                    }
                     value={metaData.domain}
                     required
                     disabled={isUploading}
@@ -419,7 +443,9 @@ export default function ContributorDashboard() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="cv">Computer Vision</SelectItem>
-                      <SelectItem value="nlp">Natural Language Processing</SelectItem>
+                      <SelectItem value="nlp">
+                        Natural Language Processing
+                      </SelectItem>
                       <SelectItem value="rl">Reinforcement Learning</SelectItem>
                     </SelectContent>
                   </Select>
@@ -428,7 +454,9 @@ export default function ContributorDashboard() {
                 <div className="space-y-2">
                   <Label>License Type</Label>
                   <Select
-                    onValueChange={(value) => handleSelectChange("license", value)}
+                    onValueChange={(value) =>
+                      handleSelectChange("license", value)
+                    }
                     value={metaData.license}
                     required
                     disabled={isUploading}
@@ -447,7 +475,9 @@ export default function ContributorDashboard() {
                 <div className="space-y-2">
                   <Label>Access Type</Label>
                   <Select
-                    onValueChange={(value) => handleSelectChange("access", value)}
+                    onValueChange={(value) =>
+                      handleSelectChange("access", value)
+                    }
                     value={metaData.access}
                     required
                     disabled={isUploading}
@@ -492,7 +522,9 @@ export default function ContributorDashboard() {
             <CardContent>
               <div className="flex flex-col items-center justify-center py-12">
                 <RefreshCw className="h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900">Analytics Coming Soon</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Analytics Coming Soon
+                </h3>
                 <p className="text-gray-500 mt-1">
                   We're working on bringing you detailed analytics
                 </p>
