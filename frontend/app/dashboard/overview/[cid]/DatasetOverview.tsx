@@ -9,8 +9,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useReadContract, useWriteContract } from "wagmi";
-import { Database, Layers, Calendar, FileText, Download, Loader2, ShieldCheck, Info, CheckCircle2, AlertCircle } from "lucide-react";
+import { useReadContract, useWriteContract, useAccount } from "wagmi";
+import {
+  Database,
+  Layers,
+  Calendar,
+  FileText,
+  Download,
+  Loader2,
+  ShieldCheck,
+  Info,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import ABI from "../../../contractFile/abi.json";
 import OBLIGATION_ABI from "../../../contractFile/obligation-abi.json";
@@ -24,15 +35,20 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogTrigger
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 
 function DatasetOverview() {
+  const { writeContract } = useWriteContract();
+  const { chain } = useAccount();
+  const { primaryWallet } = useDynamicContext();
+
   const [dataset, setDataset] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
@@ -47,6 +63,9 @@ function DatasetOverview() {
   const { cid } = useParams();
   const router = useRouter();
 
+  const akaveAddress = "0xa53eec2fcd2fbC91C8417f015B65f3800E9C5b07";
+  const storachaAddress = "0xa53eec2fc82fbC91C8417f015B65f3800E9C5b07";
+
   // Fetch dataset
   const { data: datasetData, isLoading } = useReadContract({
     abi: ABI.abi,
@@ -58,13 +77,12 @@ function DatasetOverview() {
   // Fetch obligation
   const { data: obligationData } = useReadContract({
     abi: OBLIGATION_ABI.abi,
-    address: "0x...", // Your obligation contract address
+    address: "0x4CE7FCE932F4F1E7CAE42F6351D83639B5dff23A", // Your obligation contract address
     functionName: "obligations",
     args: [cid],
   });
 
   // For creating obligations
-  const { writeContract } = useWriteContract();
 
   useEffect(() => {
     if (!isLoading) {
@@ -104,7 +122,7 @@ function DatasetOverview() {
     try {
       const response = await fetch(`http://127.0.0.1:5000/api/datasets/${cid}`);
       if (!response.ok) throw new Error("Failed to download");
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -114,7 +132,7 @@ function DatasetOverview() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
+
       toast.success("Download started");
     } catch (error) {
       console.error("Download error:", error);
@@ -124,60 +142,88 @@ function DatasetOverview() {
     }
   };
 
-  const handleCreateObligation = async () => {
+  const handleCreateObligation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!primaryWallet) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
+    // if (chain?.id !== 11155111) {
+    //   toast.error("Please switch to Eth Sepolia network");
+    //   return;
+    // }
+
     setCreatingObligation(true);
+
     try {
-      writeContract({
-        address: "0x...", // Your obligation contract address
-        abi: OBLIGATION_ABI.abi,
-        functionName: "createObligation",
-        args: [
-          cid,
-          obligationForm.provider,
-          Number(obligationForm.duration),
-          Number(obligationForm.redundancy),
-          Number(obligationForm.retrievalSpeed),
-        ],
-      }, {
-        onSuccess: () => {
-          toast.success("Storage guarantee created successfully");
-          setObligation({
+      writeContract(
+        {
+          address: "0x4CE7FCE932F4F1E7CAE42F6351D83639B5dff23A", // Your obligation contract address
+          abi: OBLIGATION_ABI.abi,
+          functionName: "createObligation",
+          args: [
             cid,
-            provider: obligationForm.provider,
-            startTime: Math.floor(Date.now() / 1000),
-            duration: Number(obligationForm.duration),
-            redundancy: Number(obligationForm.redundancy),
-            retrievalSpeed: Number(obligationForm.retrievalSpeed),
-            status: 0, // Active
-          });
+            "0x348e6e896ECcE0B74E985E31b3C5fB6c275E4A6d",
+            Number(obligationForm.duration),
+            Number(obligationForm.redundancy),
+            Number(obligationForm.retrievalSpeed),
+          ],
         },
-        onError: (error) => {
-          toast.error("Failed to create storage guarantee");
-          console.error("Error creating obligation:", error);
+        {
+          onSuccess: () => {
+            toast.success("Storage guarantee created successfully");
+            setObligation({
+              cid,
+              provider:
+                obligationForm.provider === "avave"
+                  ? akaveAddress
+                  : storachaAddress,
+              startTime: Math.floor(Date.now() / 1000),
+              duration: Number(obligationForm.duration),
+              redundancy: Number(obligationForm.redundancy),
+              retrievalSpeed: Number(obligationForm.retrievalSpeed),
+              status: 0, // Active
+            });
+          },
+          onError: (error) => {
+            toast.error("Failed to create storage guarantee");
+            console.error("Error creating obligation:", error);
+          },
         }
-      });
+      );
     } finally {
       setCreatingObligation(false);
     }
   };
 
   const obligationStatus = (status: number) => {
-    switch(status) {
-      case 0: return "Active";
-      case 1: return "Fulfilled";
-      case 2: return "Broken";
-      case 3: return "Expired";
-      default: return "Unknown";
+    switch (status) {
+      case 0:
+        return "Active";
+      case 1:
+        return "Fulfilled";
+      case 2:
+        return "Broken";
+      case 3:
+        return "Expired";
+      default:
+        return "Unknown";
     }
   };
 
   const getStatusIcon = (status: number) => {
-    switch(status) {
-      case 0: return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case 1: return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case 2: return <AlertCircle className="h-4 w-4 text-red-500" />;
-      case 3: return <AlertCircle className="h-4 w-4 text-yellow-500" />;
-      default: return <Info className="h-4 w-4 text-gray-500" />;
+    switch (status) {
+      case 0:
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      case 1:
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      case 2:
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case 3:
+        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+      default:
+        return <Info className="h-4 w-4 text-gray-500" />;
     }
   };
 
@@ -202,10 +248,16 @@ function DatasetOverview() {
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div>
             <h1 className="text-3xl font-bold">{dataset.name}</h1>
-            <p className="text-gray-600 mt-2">{dataset.description || "No description available"}</p>
+            <p className="text-gray-600 mt-2">
+              {dataset.description || "No description available"}
+            </p>
           </div>
           <div className="flex gap-2 w-full md:w-auto">
-            <Button onClick={handleDownload} disabled={downloading} className="flex-1 md:flex-none">
+            <Button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="flex-1 md:flex-none"
+            >
               {downloading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -226,12 +278,13 @@ function DatasetOverview() {
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md">
-                {!obligation ? (
+                {obligation ? (
                   <>
                     <DialogHeader>
                       <DialogTitle>Storage Guarantee Details</DialogTitle>
                       <DialogDescription>
-                        Manage your existing storage obligation for this dataset.
+                        Manage your existing storage obligation for this
+                        dataset.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
@@ -288,7 +341,8 @@ function DatasetOverview() {
                     <DialogHeader>
                       <DialogTitle>Create Storage Guarantee</DialogTitle>
                       <DialogDescription>
-                        Ensure your dataset remains available by creating a verifiable storage obligation.
+                        Ensure your dataset remains available by creating a
+                        verifiable storage obligation.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
@@ -296,14 +350,32 @@ function DatasetOverview() {
                         <Label>Storage Provider</Label>
                         <div className="grid grid-cols-2 gap-2">
                           <Button
-                            variant={obligationForm.provider === "akave" ? "default" : "outline"}
-                            onClick={() => setObligationForm({...obligationForm, provider: "akave"})}
+                            variant={
+                              obligationForm.provider === "akave"
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              setObligationForm({
+                                ...obligationForm,
+                                provider: "akave",
+                              })
+                            }
                           >
                             Akave
                           </Button>
                           <Button
-                            variant={obligationForm.provider === "storj" ? "default" : "outline"}
-                            onClick={() => setObligationForm({...obligationForm, provider: "storj"})}
+                            variant={
+                              obligationForm.provider === "storj"
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              setObligationForm({
+                                ...obligationForm,
+                                provider: "storj",
+                              })
+                            }
                           >
                             Storj
                           </Button>
@@ -312,18 +384,27 @@ function DatasetOverview() {
                       {!obligationForm.provider && (
                         <>
                           <div className="space-y-2">
-                            <Label htmlFor="duration">Storage Duration (days)</Label>
+                            <Label htmlFor="duration">
+                              Storage Duration (days)
+                            </Label>
                             <Input
                               id="duration"
                               type="number"
                               min="30"
                               max="3650"
                               value={obligationForm.duration}
-                              onChange={(e) => setObligationForm({...obligationForm, duration: e.target.value})}
+                              onChange={(e) =>
+                                setObligationForm({
+                                  ...obligationForm,
+                                  duration: e.target.value,
+                                })
+                              }
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="redundancy">Redundancy Factor</Label>
+                            <Label htmlFor="redundancy">
+                              Redundancy Factor
+                            </Label>
                             <div className="flex items-center gap-2">
                               <Input
                                 id="redundancy"
@@ -331,41 +412,65 @@ function DatasetOverview() {
                                 min="1"
                                 max="10"
                                 value={obligationForm.redundancy}
-                                onChange={(e) => setObligationForm({...obligationForm, redundancy: e.target.value})}
+                                onChange={(e) =>
+                                  setObligationForm({
+                                    ...obligationForm,
+                                    redundancy: e.target.value,
+                                  })
+                                }
                               />
-                              <span className="text-sm text-gray-500">copies</span>
+                              <span className="text-sm text-gray-500">
+                                copies
+                              </span>
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="retrievalSpeed">Max Retrieval Speed (ms)</Label>
+                            <Label htmlFor="retrievalSpeed">
+                              Max Retrieval Speed (ms)
+                            </Label>
                             <Input
                               id="retrievalSpeed"
                               type="number"
                               min="100"
                               max="2000"
                               value={obligationForm.retrievalSpeed}
-                              onChange={(e) => setObligationForm({...obligationForm, retrievalSpeed: e.target.value})}
+                              onChange={(e) =>
+                                setObligationForm({
+                                  ...obligationForm,
+                                  retrievalSpeed: e.target.value,
+                                })
+                              }
                             />
                           </div>
                           <div className="rounded-lg border p-4">
                             <div className="flex justify-between text-sm">
                               <span>Estimated Cost</span>
                               <span className="font-medium">
-                                ~${(Number(obligationForm.duration) * 0.02).toFixed(2)}/month
+                                ~$
+                                {(
+                                  Number(obligationForm.duration) * 0.02
+                                ).toFixed(2)}
+                                /month
                               </span>
                             </div>
-                            <Progress value={Number(obligationForm.redundancy) * 10} className="h-2 mt-2" />
+                            <Progress
+                              value={Number(obligationForm.redundancy) * 10}
+                              className="h-2 mt-2"
+                            />
                             <p className="text-xs text-gray-500 mt-1">
-                              Based on current network rates and your selected parameters
+                              Based on current network rates and your selected
+                              parameters
                             </p>
                           </div>
                         </>
                       )}
                     </div>
                     <DialogFooter>
-                      <Button 
+                      <Button
                         onClick={handleCreateObligation}
-                        disabled={!obligationForm.provider || creatingObligation}
+                        disabled={
+                          !obligationForm.provider || creatingObligation
+                        }
                       >
                         {creatingObligation ? (
                           <>
@@ -395,7 +500,8 @@ function DatasetOverview() {
                 <div>
                   <h3 className="font-medium">File Information</h3>
                   <p className="text-sm text-gray-600">
-                    {dataset.fileName} • {formatFileSize(Number(dataset.fileSize))}
+                    {dataset.fileName} •{" "}
+                    {formatFileSize(Number(dataset.fileSize))}
                   </p>
                 </div>
               </div>
@@ -446,7 +552,9 @@ function DatasetOverview() {
               <div>
                 <CardTitle>Storage Guarantees</CardTitle>
                 <CardDescription>
-                  {obligation ? "Active storage obligations" : "Verifiable commitments ensuring data availability"}
+                  {obligation
+                    ? "Active storage obligations"
+                    : "Verifiable commitments ensuring data availability"}
                 </CardDescription>
               </div>
               {!obligation && (
@@ -476,14 +584,18 @@ function DatasetOverview() {
                   </div>
                   <div className="space-y-1">
                     <Label className="text-sm">Days Remaining</Label>
-                    <p className="font-medium">{getDaysRemaining(obligation)}</p>
+                    <p className="font-medium">
+                      {getDaysRemaining(obligation)}
+                    </p>
                   </div>
                 </div>
                 <Separator />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <Label className="text-sm">Redundancy</Label>
-                    <p className="font-medium">{obligation.redundancy}x copies</p>
+                    <p className="font-medium">
+                      {obligation.redundancy}x copies
+                    </p>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-sm">Retrieval Speed</Label>
@@ -506,8 +618,9 @@ function DatasetOverview() {
                 <div>
                   <h3 className="font-medium">No Active Storage Guarantees</h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    Adding a storage obligation increases buyer confidence by guaranteeing 
-                    your dataset remains available for the specified duration with verifiable proofs.
+                    Adding a storage obligation increases buyer confidence by
+                    guaranteeing your dataset remains available for the
+                    specified duration with verifiable proofs.
                   </p>
                   <div className="mt-4 flex gap-2">
                     <Dialog>

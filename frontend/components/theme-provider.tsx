@@ -14,18 +14,17 @@ import {
 
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { DynamicWagmiConnector } from "@dynamic-labs/wagmi-connector";
-import { arbitrumSepolia } from "viem/chains"; // Importing arbitrumSepolia
+import { arbitrumSepolia, sepolia } from "viem/chains"; // Importing both chains
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   const config = createConfig({
-    // Add arbitrumSepolia to the chains array in Wagmi config
-    chains: [arbitrumSepolia], 
+    chains: [arbitrumSepolia, sepolia], // Added Ethereum Sepolia
     multiInjectedProviderDiscovery: false,
     transports: {
-      [arbitrumSepolia.id]: http(), // Setting up the transport for arbitrumSepolia
+      [arbitrumSepolia.id]: http(),
+      [sepolia.id]: http(), // Added transport for Ethereum Sepolia
     },
   });
-
 
   const queryClient = new QueryClient();
 
