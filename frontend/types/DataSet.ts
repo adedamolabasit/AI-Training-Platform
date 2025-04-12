@@ -67,6 +67,7 @@ export interface DataSetInterface extends Interface {
     nameOrSignature:
       | "getAllMetadata"
       | "getCountByVisibility"
+      | "getMetadataByCID"
       | "getMetadataByVisibility"
       | "getTotalDatasetCount"
       | "storeMetadata"
@@ -82,6 +83,10 @@ export interface DataSetInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getCountByVisibility",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMetadataByCID",
     values: [string]
   ): string;
   encodeFunctionData(
@@ -112,6 +117,10 @@ export interface DataSetInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getCountByVisibility",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMetadataByCID",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -263,6 +272,12 @@ export interface DataSet extends BaseContract {
     "view"
   >;
 
+  getMetadataByCID: TypedContractMethod<
+    [cid: string],
+    [DataSet.MetadataStructOutput],
+    "view"
+  >;
+
   getMetadataByVisibility: TypedContractMethod<
     [visibility: string, page: BigNumberish, pageSize: BigNumberish],
     [DataSet.MetadataStructOutput[]],
@@ -300,6 +315,9 @@ export interface DataSet extends BaseContract {
   getFunction(
     nameOrSignature: "getCountByVisibility"
   ): TypedContractMethod<[visibility: string], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getMetadataByCID"
+  ): TypedContractMethod<[cid: string], [DataSet.MetadataStructOutput], "view">;
   getFunction(
     nameOrSignature: "getMetadataByVisibility"
   ): TypedContractMethod<

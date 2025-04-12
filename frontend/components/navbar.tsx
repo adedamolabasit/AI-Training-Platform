@@ -16,9 +16,9 @@ const Navbar = () => {
 
   const routes = [
     {
-      href: "/dashboard/contributor",
-      label: "DataSet Contributors",
-      active: pathname === "/dashboard/contributor",
+      href: "/dashboard/datasets",
+      label: "DataSets Market",
+      active: pathname === "/dashboard/datasets",
     },
     {
       href: "/dashboard/trainer",
@@ -38,7 +38,7 @@ const Navbar = () => {
         <Link href="/">
           <div className="flex items-center gap-x-2">
             <Brain className="h-8 w-8" />
-            <span className="text-xl font-bold">AI Training Platform</span>
+            <span className="text-xl font-bold">Datasets Hub</span>
           </div>
         </Link>
         <nav className="flex items-center space-x-6 lg:space-x-8 mx-6">

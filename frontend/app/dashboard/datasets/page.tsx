@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,6 +24,7 @@ import {
   Layers,
   Calendar,
   RefreshCw,
+  Download,
 } from "lucide-react";
 import {
   Select,
@@ -34,7 +36,7 @@ import {
 import { useWriteContract, useReadContract, useAccount } from "wagmi";
 import { toast } from "sonner";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
-import ABI from "../../../abi.json";
+import ABI from "../../contractFile/abi.json";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type FileItem = {
@@ -56,6 +58,8 @@ type FileState = {
 };
 
 export default function ContributorDashboard() {
+  const router = useRouter();
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [metaData, setMetaData] = useState({
     name: "",
@@ -64,7 +68,7 @@ export default function ContributorDashboard() {
     access: "",
   });
   const [isUploading, setIsUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState("upload");
+  const [activeTab, setActiveTab] = useState("all");
   const [dataSet, setDataSet] = useState<FileState>();
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -80,18 +84,18 @@ export default function ContributorDashboard() {
     isError,
   } = useReadContract({
     abi: ABI.abi,
-    address: "0x4e070bb604E544dE53851E5a5fDC4B0086674487",
+    address: "0x0E1419c19b27561808701e0b6C7D7d2b2ccd9EC0",
     functionName: "getAllMetadata",
     args: [0, 100],
   });
 
-  useEffect(() => {
-    if (!allDataSet) {
-      setPulse(true);
-      const timer = setTimeout(() => setPulse(false), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading]);
+  // useEffect(() => {
+  //   if (!allDataSet && activeTab === "all") {
+  //     setPulse(true);
+  //     const timer = setTimeout(() => setPulse(false), 1000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [isLoading, activeTab]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -145,7 +149,7 @@ export default function ContributorDashboard() {
       const result = await response.json();
 
       writeContract({
-        address: "0x4e070bb604E544dE53851E5a5fDC4B0086674487",
+        address: "0x0E1419c19b27561808701e0b6C7D7d2b2ccd9EC0",
         abi: ABI.abi,
         functionName: "storeMetadata",
         args: [
@@ -221,10 +225,7 @@ export default function ContributorDashboard() {
   const renderLoadingSkeleton = () => (
     <div className="space-y-4">
       {[...Array(3)].map((_, i) => (
-        <Skeleton
-          key={i}
-          className={`h-32 rounded-lg ${pulse ? "animate-pulse" : ""}`}
-        />
+        <Skeleton key={i} className={`h-32 rounded-lg ${pulse ? "" : ""}`} />
       ))}
     </div>
   );
@@ -234,8 +235,19 @@ export default function ContributorDashboard() {
       {(allDataSet as any)?.map((data: any) => (
         <Card key={data.cid} className="hover:shadow-lg transition-shadow">
           <CardHeader>
-            <CardTitle className="text-lg truncate">{data.name}</CardTitle>
-            <CardDescription className="flex items-center gap-2">
+            <div className="flex justify-between gap-20">
+              <CardTitle className="text-lg truncate">{data.name}</CardTitle>
+              <span
+                className={`text-xs px-2 py-1 rounded-full flex justify-center items-center capitalize ${
+                  data.visibility === "public"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-blue-100 text-blue-800"
+                }`}
+              >
+                {data.visibility}
+              </span>
+            </div>
+            <CardDescription className="flex items-center gap-2 pr-40">
               <span className="truncate">{data.fileName}</span>
               <span>•</span>
               <span>{data.license}</span>
@@ -248,26 +260,63 @@ export default function ContributorDashboard() {
                 <span>{formatFileSize(Number(data.fileSize))}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <Layers className="h-4 w-4 text-gray-500" />
-                <span className="capitalize">{data.domain}</span>
+                <div className="flex items-center gap-2 text-sm">
+                  <Layers className="h-4 w-4 text-gray-500" />
+                  <span className="capitalize">
+                    {data.domain === "nlp"
+                      ? "Natural Language Processing"
+                      : data.domain === "rl"
+                      ? "Reinforcement Learning"
+                      : data.domain === "cv"
+                      ? "Computer Vision"
+                      : data.domain}
+                  </span>
+                </div>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-gray-500" />
                 <span>{formatDate(Number(data.createdAt))}</span>
               </div>
-              <div className="flex justify-between pt-2">
-                <span
-                  className={`text-xs px-2 py-1 rounded-full ${
-                    data.visibility === "public"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-blue-100 text-blue-800"
-                  }`}
-                >
-                  {data.visibility}
-                </span>
-                <Button variant="outline" size="sm">
-                  <Eye className="mr-2 h-4 w-4" /> View
-                </Button>
+
+              <div className="flex justify-between">
+                {/* Access Type Section */}
+                <div className="flex items-center gap-2 text-sm">
+                  {data.access === "frees" && (
+                    <span className="text-green-600 font-semibold">Free</span>
+                  )}
+                  {data.access === "free" && (
+                    <span className="text-blue-600 font-semibold">
+                      ${data.price || "10.00"}
+                    </span>
+                  )}
+                  {data === "dao" && (
+                    <span className="text-yellow-600 font-semibold flex items-center gap-1">
+                      <Eye className="h-4 w-4 text-yellow-600" />
+                      DAO
+                    </span>
+                  )}
+                </div>
+                <div className="flex justify-end pt-2">
+                  <Button
+                    onClick={() =>
+                      router.push(`/dashboard/overview/${data.cid}`)
+                    }
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Eye className="mr-2 h-4 w-4" /> View
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      router.push(`/dashboard/overview/${data.cid}`)
+                    }
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Download
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -289,7 +338,18 @@ export default function ContributorDashboard() {
                   <span>•</span>
                   <span>{formatFileSize(Number(data.fileSize))}</span>
                   <span>•</span>
-                  <span className="capitalize">{data.domain}</span>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Layers className="h-4 w-4 text-gray-500" />
+                    <span className="capitalize">
+                      {data.domain === "nlp"
+                        ? "Natural Language Processing"
+                        : data.domain === "rl"
+                        ? "Reinforcement Learning"
+                        : data.domain === "cv"
+                        ? "Computer Vision"
+                        : data.domain}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -302,7 +362,11 @@ export default function ContributorDashboard() {
                 >
                   {data.visibility}
                 </span>
-                <Button variant="outline" size="sm">
+                <Button
+                  onClick={() => router.push(`/dashboard/overview/${data.cid}`)}
+                  variant="outline"
+                  size="sm"
+                >
                   <Eye className="mr-2 h-4 w-4" /> View
                 </Button>
                 <Button variant="outline" size="sm">
@@ -317,7 +381,7 @@ export default function ContributorDashboard() {
   );
 
   return (
-    <div className={`py-10 ${!pulse ? "animate-pulse" : ""}`}>
+    <div className={`py-10 ${pulse ? "animate-pulse" : ""}`}>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Data Contributor Dashboard</h1>
         {activeTab !== "upload" && (

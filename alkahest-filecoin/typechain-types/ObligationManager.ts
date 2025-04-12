@@ -29,6 +29,9 @@ export interface ObligationManagerInterface extends Interface {
       | "arbiter"
       | "createObligation"
       | "obligations"
+      | "owner"
+      | "setSLARequirements"
+      | "slaRequirements"
       | "updateStatus"
   ): FunctionFragment;
 
@@ -42,6 +45,15 @@ export interface ObligationManagerInterface extends Interface {
     values: [string, AddressLike, BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "obligations", values: [string]): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "setSLARequirements",
+    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "slaRequirements",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "updateStatus",
     values: [string, BigNumberish]
@@ -54,6 +66,15 @@ export interface ObligationManagerInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "obligations",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setSLARequirements",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "slaRequirements",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -176,6 +197,32 @@ export interface ObligationManager extends BaseContract {
     "view"
   >;
 
+  owner: TypedContractMethod<[], [string], "view">;
+
+  setSLARequirements: TypedContractMethod<
+    [
+      minDuration: BigNumberish,
+      maxDuration: BigNumberish,
+      minRedundancy: BigNumberish,
+      maxRetrievalSpeed: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
+
+  slaRequirements: TypedContractMethod<
+    [],
+    [
+      [bigint, bigint, bigint, bigint] & {
+        minDuration: bigint;
+        maxDuration: bigint;
+        minRedundancy: bigint;
+        maxRetrievalSpeed: bigint;
+      }
+    ],
+    "view"
+  >;
+
   updateStatus: TypedContractMethod<
     [cid: string, newStatus: BigNumberish],
     [void],
@@ -215,6 +262,35 @@ export interface ObligationManager extends BaseContract {
         redundancy: bigint;
         retrievalSpeed: bigint;
         status: bigint;
+      }
+    ],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "owner"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "setSLARequirements"
+  ): TypedContractMethod<
+    [
+      minDuration: BigNumberish,
+      maxDuration: BigNumberish,
+      minRedundancy: BigNumberish,
+      maxRetrievalSpeed: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "slaRequirements"
+  ): TypedContractMethod<
+    [],
+    [
+      [bigint, bigint, bigint, bigint] & {
+        minDuration: bigint;
+        maxDuration: bigint;
+        minRedundancy: bigint;
+        maxRetrievalSpeed: bigint;
       }
     ],
     "view"

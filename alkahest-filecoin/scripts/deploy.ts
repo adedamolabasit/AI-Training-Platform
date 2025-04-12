@@ -24,6 +24,14 @@ async function main() {
 //   });
 //   await manager.waitForDeployment();
 //   console.log("ObligationManager:", await manager.getAddress());
+
+// await manager.setSLARequirements(
+//     86400,    // min 1 day
+//     31536000, // max 1 year
+//     2,        // min 2 replicas
+//     500       // max 500ms retrieval
+//   );
+// }
 }
 
 main().catch((error) => {

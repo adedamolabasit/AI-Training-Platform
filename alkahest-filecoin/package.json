@@ -18,6 +18,11 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@ethereum-attestation-service/eas-contracts": "^1.8.0",
+    "@filecoin-shipyard/lotus-client-provider-nodejs": "^1.1.1",
+    "@filecoin-shipyard/lotus-client-rpc": "^1.2.0",
+    "@filecoin-shipyard/lotus-client-schema": "^4.2.0",
+    "commander": "^13.1.0",
     "dotenv": "^16.5.0",
     "filecoin.js": "github:filecoin-shipyard/filecoin.js",
     "hardhat": "^2.23.0"
