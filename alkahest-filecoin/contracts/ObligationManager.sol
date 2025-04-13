@@ -37,7 +37,8 @@ contract ObligationManager {
         _;
     }
 
-    modifier onlyOwner() { // Added owner modifier
+    modifier onlyOwner() {
+        // Added owner modifier
         require(msg.sender == owner, "Only owner allowed");
         _;
     }
@@ -88,7 +89,7 @@ contract ObligationManager {
             retrievalSpeed <= slaRequirements.maxRetrievalSpeed,
             "Retrieval speed too slow"
         );
-        
+
         obligations[cid] = Obligation({
             cid: cid,
             provider: provider,
@@ -104,6 +105,34 @@ contract ObligationManager {
             duration,
             redundancy,
             retrievalSpeed
+        );
+    }
+
+    function getObligationByCID(
+        string memory cid
+    )
+        external
+        view
+        returns (
+            string memory,
+            address,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            Status
+        )
+    {
+        require(obligations[cid].startTime != 0, "Obligation does not exist");
+        Obligation memory obligation = obligations[cid];
+        return (
+            obligation.cid,
+            obligation.provider,
+            obligation.startTime,
+            obligation.duration,
+            obligation.redundancy,
+            obligation.retrievalSpeed,
+            obligation.status
         );
     }
 

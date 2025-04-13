@@ -28,6 +28,7 @@ export interface ObligationManagerInterface extends Interface {
     nameOrSignature:
       | "arbiter"
       | "createObligation"
+      | "getObligationByCID"
       | "obligations"
       | "owner"
       | "setSLARequirements"
@@ -43,6 +44,10 @@ export interface ObligationManagerInterface extends Interface {
   encodeFunctionData(
     functionFragment: "createObligation",
     values: [string, AddressLike, BigNumberish, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getObligationByCID",
+    values: [string]
   ): string;
   encodeFunctionData(functionFragment: "obligations", values: [string]): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
@@ -62,6 +67,10 @@ export interface ObligationManagerInterface extends Interface {
   decodeFunctionResult(functionFragment: "arbiter", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "createObligation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getObligationByCID",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -181,6 +190,12 @@ export interface ObligationManager extends BaseContract {
     "nonpayable"
   >;
 
+  getObligationByCID: TypedContractMethod<
+    [cid: string],
+    [[string, string, bigint, bigint, bigint, bigint, bigint]],
+    "view"
+  >;
+
   obligations: TypedContractMethod<
     [arg0: string],
     [
@@ -248,6 +263,13 @@ export interface ObligationManager extends BaseContract {
     ],
     [void],
     "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "getObligationByCID"
+  ): TypedContractMethod<
+    [cid: string],
+    [[string, string, bigint, bigint, bigint, bigint, bigint]],
+    "view"
   >;
   getFunction(
     nameOrSignature: "obligations"

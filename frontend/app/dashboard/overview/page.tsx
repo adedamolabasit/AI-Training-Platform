@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useSearchParams } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -23,8 +24,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import ABI from "../../../contractFile/abi.json";
-import OBLIGATION_ABI from "../../../contractFile/obligation-abi.json";
+import ABI from "../../contractFile/abi.json";
+import OBLIGATION_ABI from "../../contractFile/obligation-abi.json";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -60,7 +61,9 @@ function DatasetOverview() {
     redundancy: "3",
     retrievalSpeed: "500",
   });
-  const { cid } = useParams();
+  const searchParams = useSearchParams();
+  const cid = searchParams.get('cid');
+  console.log(cid,"asd")
   const router = useRouter();
 
   const akaveAddress = "0xa53eec2fcd2fbC91C8417f015B65f3800E9C5b07";
@@ -69,7 +72,7 @@ function DatasetOverview() {
   // Fetch dataset
   const { data: datasetData, isLoading } = useReadContract({
     abi: ABI.abi,
-    address: "0x0E1419c19b27561808701e0b6C7D7d2b2ccd9EC0",
+    address: "0x6b8763E021767835a48cCfDF76B36345Ee47BcD1",
     functionName: "getMetadataByCID",
     args: [cid],
   });
@@ -78,7 +81,7 @@ function DatasetOverview() {
   const { data: obligationData } = useReadContract({
     abi: OBLIGATION_ABI.abi,
     address: "0x4CE7FCE932F4F1E7CAE42F6351D83639B5dff23A", // Your obligation contract address
-    functionName: "obligations",
+    functionName: "getObligationByCID",
     args: [cid],
   });
 

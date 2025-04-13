@@ -18,7 +18,7 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {},
-    filecoin: {
+    sepolia: {
       url: "https://eth-sepolia.g.alchemy.com/v2/2hpcKFDRxgibUMfmc8jxG77IYTLRea0r",
       chainId: 11155111,
       accounts: [process.env.PRIVATE_KEY!],

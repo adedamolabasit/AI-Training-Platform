@@ -9,7 +9,7 @@
     "lint": "next lint",
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy:sepolia": "hardhat run app/scripts/deploy.ts --network arbitrumSepolia",
+    "deploy:sepolia": "hardhat run app/scripts/deploy.ts --network sepolia",
     "verify": "hardhat verify"
   },
   "dependencies": {

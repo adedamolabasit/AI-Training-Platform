@@ -13,10 +13,10 @@ const config = {
     },
   },
   networks: {
-    arbitrumSepolia: {
+    sepolia: {
       url: `${process.env.ALCHEMY_API_URL}`,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 421614,
+      chainId: 11155111,
     },
   },
   typechain: {

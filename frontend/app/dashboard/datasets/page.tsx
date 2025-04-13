@@ -63,6 +63,7 @@ export default function ContributorDashboard() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [metaData, setMetaData] = useState({
     name: "",
+    provider:"",
     domain: "",
     license: "",
     access: "",
@@ -84,7 +85,7 @@ export default function ContributorDashboard() {
     isError,
   } = useReadContract({
     abi: ABI.abi,
-    address: "0x0E1419c19b27561808701e0b6C7D7d2b2ccd9EC0",
+    address:  "0x6b8763E021767835a48cCfDF76B36345Ee47BcD1",
     functionName: "getAllMetadata",
     args: [0, 100],
   });
@@ -126,11 +127,6 @@ export default function ContributorDashboard() {
       return;
     }
 
-    if (chain?.id !== 421614) {
-      toast.error("Please switch to Arbitrum Sepolia network");
-      return;
-    }
-
     if (!selectedFile) {
       toast.error("Please select a file first");
       return;
@@ -149,7 +145,7 @@ export default function ContributorDashboard() {
       const result = await response.json();
 
       writeContract({
-        address: "0x0E1419c19b27561808701e0b6C7D7d2b2ccd9EC0",
+        address: "0x6b8763E021767835a48cCfDF76B36345Ee47BcD1",
         abi: ABI.abi,
         functionName: "storeMetadata",
         args: [
@@ -169,6 +165,7 @@ export default function ContributorDashboard() {
         setSelectedFile(null);
         setMetaData({
           name: "",
+          provider:"",
           domain: "",
           license: "",
           access: "",
@@ -299,7 +296,7 @@ export default function ContributorDashboard() {
                 <div className="flex justify-end pt-2">
                   <Button
                     onClick={() =>
-                      router.push(`/dashboard/overview/${data.cid}`)
+                      router.push(`/dashboard/overview?cid=${data.cid}`)
                     }
                     variant="outline"
                     size="sm"
@@ -308,7 +305,7 @@ export default function ContributorDashboard() {
                   </Button>
                   <Button
                     onClick={() =>
-                      router.push(`/dashboard/overview/${data.cid}`)
+                      router.push(`/dashboard/overview?cid=${data.cid}`)
                     }
                     variant="outline"
                     size="sm"
@@ -363,7 +360,9 @@ export default function ContributorDashboard() {
                   {data.visibility}
                 </span>
                 <Button
-                  onClick={() => router.push(`/dashboard/overview/${data.cid}`)}
+                  onClick={() =>
+                    router.push(`/dashboard/overview?cid=${data.cid}`)
+                  }
                   variant="outline"
                   size="sm"
                 >
@@ -490,6 +489,43 @@ export default function ContributorDashboard() {
                     required
                     disabled={isUploading}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Storage Provider</Label>
+                  <Select
+                    onValueChange={(value) =>
+                      handleSelectChange("provider", value)
+                    }
+                    value={metaData.provider}
+                    required
+                    disabled={isUploading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select storage provider" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="akave">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src="https://docs.akave.ai/~gitbook/image?url=https%3A%2F%2F594872226-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Forganizations%252FTBZ1Ifp7uxt1BgTdXKIM%252Fsites%252Fsite_xssfp%252Ficon%252FUaLr5SOAddNDtHFmF7no%252FIcon_Duo_BLUE_1%252B4.png%3Falt%3Dmedia%26token%3D47f03ba5-98a0-4a71-8d69-25068348e3a7&width=32&dpr=2&quality=100&sign=cbdd9f6b&sv=2"
+                            alt="Akave"
+                            className="w-4 h-4 rounded-sm"
+                          />
+                          Akave
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="storacha">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src="https://storacha.network/img/storacha-bug.svg"
+                            alt="Storacha"
+                            className="w-6 h-4 rounded-sm"
+                          />
+                          Storacha
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
