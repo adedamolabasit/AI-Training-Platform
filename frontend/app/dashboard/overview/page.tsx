@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -24,7 +24,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import ABI from "../../contractFile/abi.json";
+import ABI from "../../contractFile/dataset-abi.json";
 import OBLIGATION_ABI from "../../contractFile/obligation-abi.json";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
@@ -62,8 +62,7 @@ function DatasetOverview() {
     retrievalSpeed: "500",
   });
   const searchParams = useSearchParams();
-  const cid = searchParams.get('cid');
-  console.log(cid,"asd")
+  const cid = searchParams.get("cid");
   const router = useRouter();
 
   const akaveAddress = "0xa53eec2fcd2fbC91C8417f015B65f3800E9C5b07";
@@ -80,7 +79,7 @@ function DatasetOverview() {
   // Fetch obligation
   const { data: obligationData } = useReadContract({
     abi: OBLIGATION_ABI.abi,
-    address: "0x4CE7FCE932F4F1E7CAE42F6351D83639B5dff23A", // Your obligation contract address
+    address: "0x0E1419c19b27561808701e0b6C7D7d2b2ccd9EC0", // Your obligation contract address
     functionName: "getObligationByCID",
     args: [cid],
   });
@@ -102,7 +101,8 @@ function DatasetOverview() {
     if (obligationData) {
       setObligation(obligationData);
     }
-  }, [obligationData]);
+  }, []);
+  console.log(obligationData, "data");
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -152,17 +152,12 @@ function DatasetOverview() {
       return;
     }
 
-    // if (chain?.id !== 11155111) {
-    //   toast.error("Please switch to Eth Sepolia network");
-    //   return;
-    // }
-
     setCreatingObligation(true);
 
     try {
       writeContract(
         {
-          address: "0x4CE7FCE932F4F1E7CAE42F6351D83639B5dff23A", // Your obligation contract address
+          address: "0xE273ca8a753024627fDeB2dEB3f60aC79A7E0DAd",
           abi: OBLIGATION_ABI.abi,
           functionName: "createObligation",
           args: [
@@ -718,7 +713,7 @@ function NotFoundView() {
         <p className="text-gray-600 mb-6">
           The dataset you're looking for doesn't exist or may have been removed.
         </p>
-        <Link href="/dashboard">
+        <Link href="/dashboard/datasets">
           <Button>Back to Dashboard</Button>
         </Link>
       </div>

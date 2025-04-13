@@ -39,7 +39,7 @@ export default function Home() {
               </p>
               <div className="space-x-4">
                 <Button asChild size="lg">
-                  <Link href="/dashboard/contributor">Get Started</Link>
+                  <Link href="/dashboard/datasets">Get Started</Link>
                 </Button>
                 <Button variant="outline" size="lg" asChild>
                   <Link href="/verify">Verify Models</Link>

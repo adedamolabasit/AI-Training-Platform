@@ -36,7 +36,7 @@ import {
 import { useWriteContract, useReadContract, useAccount } from "wagmi";
 import { toast } from "sonner";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
-import ABI from "../../contractFile/abi.json";
+import ABI from "../../contractFile/dataset-abi.json";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type FileItem = {
@@ -63,7 +63,7 @@ export default function ContributorDashboard() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [metaData, setMetaData] = useState({
     name: "",
-    provider:"",
+    provider: "",
     domain: "",
     license: "",
     access: "",
@@ -85,7 +85,7 @@ export default function ContributorDashboard() {
     isError,
   } = useReadContract({
     abi: ABI.abi,
-    address:  "0x6b8763E021767835a48cCfDF76B36345Ee47BcD1",
+    address: "0x6b8763E021767835a48cCfDF76B36345Ee47BcD1",
     functionName: "getAllMetadata",
     args: [0, 100],
   });
@@ -165,7 +165,7 @@ export default function ContributorDashboard() {
         setSelectedFile(null);
         setMetaData({
           name: "",
-          provider:"",
+          provider: "",
           domain: "",
           license: "",
           access: "",
@@ -278,10 +278,10 @@ export default function ContributorDashboard() {
               <div className="flex justify-between">
                 {/* Access Type Section */}
                 <div className="flex items-center gap-2 text-sm">
-                  {data.access === "frees" && (
+                  {data.access === "free" && (
                     <span className="text-green-600 font-semibold">Free</span>
                   )}
-                  {data.access === "free" && (
+                  {data.access === "paid" && (
                     <span className="text-blue-600 font-semibold">
                       ${data.price || "10.00"}
                     </span>

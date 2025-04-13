@@ -78,18 +78,6 @@ contract ObligationManager {
         uint256 redundancy,
         uint256 retrievalSpeed
     ) external {
-        require(obligations[cid].startTime == 0, "Obligation already exists");
-        require(duration >= slaRequirements.minDuration, "Duration too short");
-        require(duration <= slaRequirements.maxDuration, "Duration too long");
-        require(
-            redundancy >= slaRequirements.minRedundancy,
-            "Redundancy too low"
-        );
-        require(
-            retrievalSpeed <= slaRequirements.maxRetrievalSpeed,
-            "Retrieval speed too slow"
-        );
-
         obligations[cid] = Obligation({
             cid: cid,
             provider: provider,
@@ -123,7 +111,6 @@ contract ObligationManager {
             Status
         )
     {
-        require(obligations[cid].startTime != 0, "Obligation does not exist");
         Obligation memory obligation = obligations[cid];
         return (
             obligation.cid,
