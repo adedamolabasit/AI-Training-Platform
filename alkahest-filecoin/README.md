@@ -91,7 +91,7 @@ alkahest-filecoin/
 │   └── lotus_rpc.py
 ├── upload/                # Multi-provider upload logic
 │   ├── filecoin.py
-│   └── kavacha.py
+│   └──akave.py
 └── tests/                 # Test scripts
 🌐 Network Configuration
 Component	Endpoint

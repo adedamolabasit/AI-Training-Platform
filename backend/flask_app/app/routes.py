@@ -64,70 +64,7 @@ def upload_dataset():
 @api_blueprint.route("/api/datasets", methods=["GET"])
 def get_all_dataset():
     buckets = client.list_files("dataset")
+    cid_status = client.get_file_info()
+    
     return buckets
 
-
-# @app.route('/api/train', methods=['POST'])
-# def train_model():
-#     if 'dataset' not in request.files:
-#         return jsonify({'error': 'No dataset file provided'}), 400
-    
-#     file = request.files['dataset']
-#     if file.filename == '':
-#         return jsonify({'error': 'No selected file'}), 400
-    
-#     if file and allowed_file(file.filename):
-#         # Save the uploaded file
-#         filename = secure_filename(file.filename)
-#         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-#         file.save(filepath)
-        
-#         # Get training parameters
-#         framework = request.form.get('framework')
-#         library = request.form.get('library')
-#         compute_type = request.form.get('computeType')
-#         use_custom_script = request.form.get('useCustomScript', 'false').lower() == 'true'
-#         params = json.loads(request.form.get('params', '{}'))
-        
-#         # Generate a unique job ID
-#         job_id = str(uuid.uuid4())
-        
-#         try:
-#             # Dynamically import the appropriate training module
-#             module_name = f"trainers.{framework.lower()}_trainer"
-#             trainer_module = importlib.import_module(module_name)
-            
-#             # Prepare output directory
-#             output_dir = os.path.join(app.config['TRAINING_OUTPUT'], job_id)
-#             os.makedirs(output_dir, exist_ok=True)
-            
-#             # Prepare custom script if provided
-#             custom_script = None
-#             if use_custom_script and 'customScript' in request.form:
-#                 custom_script = request.form['customScript']
-#                 script_path = os.path.join(output_dir, 'custom_script.py')
-#                 with open(script_path, 'w') as f:
-#                     f.write(custom_script)
-            
-#             # Call the training function
-#             result = trainer_module.train(
-#                 filepath=filepath,
-#                 library=library,
-#                 params=params,
-#                 compute_type=compute_type,
-#                 output_dir=output_dir,
-#                 custom_script=custom_script
-#             )
-            
-#             return jsonify({
-#                 'job_id': job_id,
-#                 'status': 'success',
-#                 'result': result
-#             })
-            
-#         except ImportError:
-#             return jsonify({'error': f'Unsupported framework: {framework}'}), 400
-#         except Exception as e:
-#             return jsonify({'error': str(e)}), 500
-    
-#     return jsonify({'error': 'Invalid file type'}), 400
